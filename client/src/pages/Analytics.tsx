@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3 } from "lucide-react";
+import { ChartBar as BarChart3 } from "lucide-react";
 
 export default function Analytics() {
   return (

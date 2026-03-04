@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { ChevronRight, Home } from "lucide-react";
+import { ChevronRight, Chrome as Home } from "lucide-react";
 import { navigationConfig } from "@/config/navigation";
 
 export function Breadcrumbs() {

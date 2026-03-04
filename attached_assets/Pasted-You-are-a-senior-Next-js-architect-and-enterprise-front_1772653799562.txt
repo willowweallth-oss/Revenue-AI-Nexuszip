@@ -1,0 +1,102 @@
+You are a senior Next.js architect and enterprise frontend engineer.
+
+I want you to do the following tasks in order:
+
+---
+
+1️⃣ **Audit Current SaaS Dashboard Layout Implementation**
+
+Requirements for the current dashboard:
+
+- Persistent sidebar navigation
+- Top navigation bar
+- Breadcrumb support
+- User profile dropdown
+- Notification system UI
+- Collapsible sidebar
+- Mobile adaptive navigation
+- Clean routing structure
+- Layout wrapper component
+- Protected route structure ready for auth
+- Sidebar with icons
+- Multi-level navigation support
+- Active state styling
+- Role-based navigation capability (admin/user)
+- Modular, scalable folder structure
+- Proper separation of layout and page logic
+
+Technical constraints:
+
+- Next.js (App Router)
+- TypeScript (strict mode)
+- Modular, scalable design
+
+Tasks:
+
+- Inspect the entire project folder structure
+- Verify App Router best practices are followed
+- Check layout.tsx usage
+- Confirm routing structure is clean and scalable
+- Verify sidebar supports role-based rendering
+- Check for reusable components
+- Confirm mobile responsiveness
+- Identify architectural flaws or anti-patterns
+- Suggest improvements and refactor if necessary
+- Provide a PASS / FAIL checklist for each requirement
+- Provide maintainability and scalability score (1–10)
+- Generate recommended refactor plan if needed
+
+---
+
+2️⃣ **Unzip, Install, and Run the Project**
+
+- If the project is zipped, unzip it
+- Install all dependencies (npm install)
+- Verify package.json integrity
+- Check for TypeScript errors
+- Run the development server (npm run dev)
+- Fix any runtime errors
+- Confirm the server runs successfully
+- Report the local URL and any warnings
+
+---
+
+3️⃣ **Generate Core Dashboard Pages**
+
+For an **AI Revenue Automation SaaS**, create the following pages:
+
+- Overview Dashboard (analytics-heavy)
+- Leads Page
+- Conversations Page
+- Automation Flows Page
+- Campaigns Page
+- Analytics Page
+- Settings Page
+
+For each page:
+
+- Define layout sections
+- Define reusable components needed
+- Define data visualization components
+- Add placeholder mock data
+- Include charts (modern style)
+- Include advanced filtering UI
+- Include table UI patterns
+- Include pagination structure
+- Include loading skeletons
+
+Make it investor-ready and enterprise-ready.
+Do NOT build minimal placeholders.
+Keep everything modular, scalable, and professional.
+
+---
+
+4️⃣ **Final Output**
+
+- Audit report with checklist and scores
+- Verified project that runs without errors
+- Full folder structure and component hierarchy
+- Generated dashboard page structures with reusable components
+- Recommendations for scaling and improvements
+
+Treat this as a real enterprise-grade SaaS product meant for investors.

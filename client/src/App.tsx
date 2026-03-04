@@ -4,24 +4,38 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
-import { AppLayout } from "@/components/layout/AppLayout";
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
 import NotFound from "@/pages/not-found";
 
 // Pages
 import Dashboard from "@/pages/Dashboard";
 import Campaigns from "@/pages/Campaigns";
 import Insights from "@/pages/Insights";
+import Analytics from "@/pages/Analytics";
+import Customers from "@/pages/Customers";
+import Unauthorized from "@/pages/Unauthorized";
 
 function Router() {
   return (
-    <AppLayout>
-      <Switch>
-        <Route path="/" component={Dashboard} />
-        <Route path="/campaigns" component={Campaigns} />
-        <Route path="/insights" component={Insights} />
-        <Route component={NotFound} />
-      </Switch>
-    </AppLayout>
+    <Switch>
+      <Route path="/unauthorized" component={Unauthorized} />
+
+      <Route>
+        <DashboardLayout>
+          <Switch>
+            <Route path="/" component={Dashboard} />
+            <Route path="/analytics" component={Analytics} />
+            <Route path="/campaigns" component={Campaigns} />
+            <Route path="/insights" component={Insights} />
+            <Route path="/customers" component={Customers} />
+            <Route path="/customers/:id" component={Customers} />
+
+            <Route component={NotFound} />
+          </Switch>
+        </DashboardLayout>
+      </Route>
+    </Switch>
   );
 }
 

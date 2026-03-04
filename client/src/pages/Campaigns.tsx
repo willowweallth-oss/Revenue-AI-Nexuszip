@@ -59,7 +59,7 @@ export default function Campaigns() {
         }
       }
     );
-  }
+}
 
   function toggleStatus(id: number, currentStatus: string) {
     const newStatus = currentStatus === 'active' ? 'paused' : 'active';

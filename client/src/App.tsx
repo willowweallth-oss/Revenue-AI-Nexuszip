@@ -17,6 +17,9 @@ import Unauthorized from "@/pages/Unauthorized";
 import InboxPage from "@/pages/inbox/InboxPage";
 import AutomationPage from "@/pages/AutomationPage";
 import AutomationBuilder from "@/pages/AutomationBuilder";
+import Settings from "@/pages/Settings";
+import Help from "@/pages/Help";
+import Conversations from "@/pages/Conversations";
 
 function Router() {
   return (
@@ -28,6 +31,7 @@ function Router() {
           <Switch>
             <Route path="/" component={Dashboard} />
             <Route path="/inbox" component={InboxPage} />
+            <Route path="/conversations" component={Conversations} />
             <Route path="/analytics" component={Analytics} />
             <Route path="/campaigns" component={Campaigns} />
             <Route path="/automation" component={AutomationPage} />
@@ -35,6 +39,9 @@ function Router() {
             <Route path="/insights" component={Insights} />
             <Route path="/customers" component={Customers} />
             <Route path="/customers/:id" component={Customers} />
+            <Route path="/settings" component={Settings} />
+            <Route path="/settings/:tab" component={Settings} />
+            <Route path="/help" component={Help} />
 
             <Route component={NotFound} />
           </Switch>

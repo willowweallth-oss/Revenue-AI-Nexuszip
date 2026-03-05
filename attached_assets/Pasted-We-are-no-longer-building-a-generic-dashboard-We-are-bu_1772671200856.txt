@@ -1,0 +1,131 @@
+We are no longer building a generic dashboard.
+
+We are building an enterprise-grade AI Revenue Operating System (AI-ROS) for B2B service companies (agencies, high-ticket service businesses, solar/roofing companies, real estate teams).
+
+Do NOT simplify anything.
+
+Transform the current Vite + Express architecture into a production-ready multi-tenant SaaS platform with the following:
+
+---
+
+1️⃣ CORE ARCHITECTURE UPGRADES
+
+- Implement full multi-tenant architecture
+  - organizations table
+  - users table
+  - roles (admin, manager, agent)
+  - all business data scoped by organization_id
+
+- Implement real authentication:
+  - Secure password hashing
+  - JWT or session-based auth
+  - Protected API routes
+  - Role-based access control (RBAC)
+
+- Create a centralized API service layer
+- Separate business logic from controllers
+- Prepare backend for horizontal scaling
+
+---
+
+2️⃣ STRIPE SUBSCRIPTION SYSTEM
+
+- Implement subscription tiers:
+  - Starter
+  - Growth
+  - Enterprise
+
+- Add:
+  - Free trial
+  - Webhook handling
+  - Subscription status validation middleware
+  - Usage metering system
+
+No fake placeholders. Build real Stripe integration structure.
+
+---
+
+3️⃣ CORE PRODUCT MODULES (Enterprise Level)
+
+Implement fully functional versions of:
+
+A. Lead Capture Engine
+- API endpoint to create leads
+- Lead status pipeline
+- Assignment to agents
+
+B. Smart Conversations Inbox
+- Unified inbox (SMS/email placeholder structure)
+- Conversation threading
+- Lead association
+
+C. AI Qualification System
+- Backend service layer ready for AI scoring
+- Store qualification score in DB
+- Trigger automation conditions
+
+D. Automation Flow Engine
+- Trigger → Condition → Action model
+- Store flows in database
+- Backend executor service (basic job runner structure)
+
+E. Revenue Attribution Analytics
+- Track:
+  - Lead source
+  - Conversion rate
+  - Revenue per campaign
+- Implement modular analytics service
+
+---
+
+4️⃣ ENTERPRISE STANDARDS
+
+- Modular folder structure
+- Strict TypeScript everywhere
+- Clean separation of:
+  - routes
+  - controllers
+  - services
+  - models
+  - middleware
+- Environment variable validation
+- Error handling middleware
+- Logging layer
+
+---
+
+5️⃣ FRONTEND UPGRADES
+
+- Convert dashboard into a real AI Revenue OS interface
+- Ensure all pages connect to real API endpoints
+- Implement role-based UI rendering
+- Add organization switcher
+- Add subscription status UI
+- Add usage limit UI
+
+---
+
+6️⃣ SCALABILITY PREPARATION
+
+- Prepare for background job system (queue structure placeholder)
+- Modularize future microservice expansion
+- Document architectural decisions
+
+---
+
+7️⃣ OUTPUT REQUIREMENTS
+
+After implementation:
+
+- Provide updated folder structure
+- Provide DB schema overview
+- Provide explanation of multi-tenant architecture
+- Provide explanation of automation execution flow
+- Confirm server runs successfully
+- Confirm auth + subscription flow works
+- Identify any production risks remaining
+
+Treat this as a real SaaS company preparing to charge $149–$799 per month.
+
+Do not build a demo.
+Build infrastructure.

@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save, Play, Pause, Eye, AlertCircle } from "lucide-react";
+import { ArrowLeft, Save, Play, Pause, Eye, CircleAlert as AlertCircle } from "lucide-react";
 import { FlowNode, FlowEdge, NodeDefinition } from "@/types/automation";
 import { nanoid } from "nanoid";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";

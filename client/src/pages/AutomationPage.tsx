@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Zap, Play, Pause, MoreHorizontal, Edit, Trash2, Copy, Activity, TrendingUp, AlertCircle } from "lucide-react";
+import { Plus, Zap, Play, Pause, MoveHorizontal as MoreHorizontal, CreditCard as Edit, Trash2, Copy, Activity, TrendingUp, CircleAlert as AlertCircle } from "lucide-react";
 import { useLocation } from "wouter";
 import { format } from "date-fns";
 import { AutomationFlow } from "@/types/automation";

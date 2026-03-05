@@ -67,6 +67,7 @@ export const navigationConfig: NavigationSection[] = [
         name: "Automation",
         href: "/automation",
         icon: Zap,
+        badge: "New",
       },
       {
         name: "Customers",

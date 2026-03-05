@@ -15,6 +15,8 @@ import Analytics from "@/pages/Analytics";
 import Customers from "@/pages/Customers";
 import Unauthorized from "@/pages/Unauthorized";
 import InboxPage from "@/pages/inbox/InboxPage";
+import AutomationPage from "@/pages/AutomationPage";
+import AutomationBuilder from "@/pages/AutomationBuilder";
 
 function Router() {
   return (
@@ -28,6 +30,8 @@ function Router() {
             <Route path="/inbox" component={InboxPage} />
             <Route path="/analytics" component={Analytics} />
             <Route path="/campaigns" component={Campaigns} />
+            <Route path="/automation" component={AutomationPage} />
+            <Route path="/automation/builder/:id" component={AutomationBuilder} />
             <Route path="/insights" component={Insights} />
             <Route path="/customers" component={Customers} />
             <Route path="/customers/:id" component={Customers} />

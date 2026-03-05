@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import type { Server } from "http";
 import { storage } from "./storage";
+import { automationStorage } from "./automation-storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
 
@@ -153,6 +154,86 @@ export async function registerRoutes(
       }
       throw err;
     }
+  });
+
+  // Automation Flows
+  app.get("/api/automation/flows", async (req, res) => {
+    // In production, get organizationId from authenticated user
+    const organizationId = 1; // Mock for now
+    const flows = await automationStorage.getFlows(organizationId);
+    res.json(flows);
+  });
+
+  app.get("/api/automation/flows/:id", async (req, res) => {
+    const organizationId = 1; // Mock for now
+    const flow = await automationStorage.getFlow(Number(req.params.id), organizationId);
+    if (!flow) {
+      return res.status(404).json({ message: "Flow not found" });
+    }
+    res.json(flow);
+  });
+
+  app.post("/api/automation/flows", async (req, res) => {
+    try {
+      const organizationId = 1; // Mock for now
+      const flow = await automationStorage.createFlow({
+        ...req.body,
+        organizationId
+      });
+      res.status(201).json(flow);
+    } catch (err) {
+      return res.status(400).json({ message: "Failed to create flow" });
+    }
+  });
+
+  app.patch("/api/automation/flows/:id", async (req, res) => {
+    try {
+      const organizationId = 1; // Mock for now
+      const flow = await automationStorage.updateFlow(
+        Number(req.params.id),
+        organizationId,
+        req.body
+      );
+      if (!flow) {
+        return res.status(404).json({ message: "Flow not found" });
+      }
+      res.json(flow);
+    } catch (err) {
+      return res.status(400).json({ message: "Failed to update flow" });
+    }
+  });
+
+  app.delete("/api/automation/flows/:id", async (req, res) => {
+    const organizationId = 1; // Mock for now
+    await automationStorage.deleteFlow(Number(req.params.id), organizationId);
+    res.status(204).send();
+  });
+
+  app.post("/api/automation/flows/:id/toggle", async (req, res) => {
+    try {
+      const organizationId = 1; // Mock for now
+      const { isActive } = req.body;
+      const flow = await automationStorage.toggleFlowActive(
+        Number(req.params.id),
+        organizationId,
+        isActive
+      );
+      if (!flow) {
+        return res.status(404).json({ message: "Flow not found" });
+      }
+      res.json(flow);
+    } catch (err) {
+      return res.status(400).json({ message: "Failed to toggle flow" });
+    }
+  });
+
+  app.get("/api/automation/flows/:id/logs", async (req, res) => {
+    const organizationId = 1; // Mock for now
+    const logs = await automationStorage.getExecutionLogs(
+      Number(req.params.id),
+      organizationId
+    );
+    res.json(logs);
   });
 
   return httpServer;

@@ -90,3 +90,6 @@ export type InsertCampaign = z.infer<typeof insertCampaignSchema>;
 
 export type Insight = typeof insights.$inferSelect;
 export type InsertInsight = z.infer<typeof insertInsightSchema>;
+
+// Re-export automation schemas
+export * from "./automation-schema";

@@ -1,122 +1,103 @@
-import { Link, useLocation } from "wouter";
-import {
-  Sidebar,
-  SidebarContent,
+import { useAuth } from "@/store/auth-context";
+import { 
+  Sidebar, 
+  SidebarContent, 
+  SidebarFooter, 
   SidebarHeader,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarGroupContent,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarSeparator,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarGroupContent,
+  SidebarSeparator
 } from "@/components/ui/sidebar";
-import { UserProfileDropdown } from "./UserProfileDropdown";
 import { navigationConfig } from "@/config/navigation";
-import { useUser } from "@/hooks/use-user";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Link, useLocation } from "wouter";
+import { cn } from "@/lib/utils";
+import { UsageLimitDisplay } from "@/components/dashboard/UsageLimitDisplay";
+import { Sparkles, Building2, ChevronDown, LogOut, Settings, User } from "lucide-react";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function DashboardSidebar() {
   const [location] = useLocation();
-  const { data: user, isLoading } = useUser();
+  const { user, organization, isAdmin } = useAuth();
 
-  const filteredNavigation = navigationConfig.filter(section => {
+  const filteredNav = navigationConfig.filter(section => {
     if (!section.requiredRole) return true;
-    if (!user) return false;
-    return section.requiredRole.includes(user.role as any);
+    const userRole = user?.role as any;
+    return section.requiredRole.includes(userRole);
   });
 
   return (
-    <Sidebar className="border-r border-border/50">
-      <SidebarHeader className="h-16 flex items-center px-4 border-b border-border/50">
-        <Link href="/" className="flex items-center gap-2 font-semibold font-display text-lg tracking-tight hover:opacity-80 transition-opacity">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-          </div>
-          SaaS Platform
-        </Link>
+    <Sidebar variant="sidebar" collapsible="icon" className="border-r border-border/50">
+      <SidebarHeader className="border-b border-sidebar-border p-4">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <SidebarMenuButton size="lg" className="hover-elevate transition-all">
+              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
+                <Building2 className="size-4" />
+              </div>
+              <div className="flex flex-col gap-0.5 leading-none overflow-hidden">
+                <span className="font-semibold truncate">{organization?.name || "Loading..."}</span>
+                <span className="text-xs text-muted-foreground capitalize">{organization?.tier || "Basic"} Plan</span>
+              </div>
+              <ChevronDown className="ml-auto size-4 opacity-50 shrink-0" />
+            </SidebarMenuButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-64" align="start" side="right" sideOffset={10}>
+            <DropdownMenuLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Organizations</DropdownMenuLabel>
+            <DropdownMenuItem className="gap-2 cursor-pointer">
+              <div className="flex size-6 items-center justify-center rounded bg-muted">
+                <Building2 className="size-3" />
+              </div>
+              <span className="flex-1 truncate">{organization?.name}</span>
+              <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded uppercase font-bold">Active</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="cursor-pointer text-muted-foreground">
+              <Plus className="mr-2 size-4" />
+              <span>Create Organization</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </SidebarHeader>
 
-      <SidebarContent className="py-4">
-        {filteredNavigation.map((section, idx) => (
+      <SidebarContent className="py-2">
+        {filteredNav.map((section, idx) => (
           <div key={section.title}>
             <SidebarGroup>
-              <SidebarGroupLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
+              <SidebarGroupLabel className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/70 px-4 mb-2">
                 {section.title}
               </SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   {section.items.map((item) => {
-                    const isActive = item.exact
-                      ? location === item.href
-                      : location.startsWith(item.href);
-
-                    if (item.children) {
-                      return (
-                        <SidebarMenuItem key={item.name}>
-                          <SidebarMenuButton
-                            className={`
-                              h-10 px-3 rounded-lg transition-all duration-200
-                              ${isActive ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground hover:text-foreground'}
-                            `}
-                          >
-                            <item.icon className={`h-4 w-4 ${isActive ? 'text-primary' : ''}`} />
-                            <span>{item.name}</span>
-                            {item.badge && (
-                              <span className="ml-auto bg-primary/20 text-primary text-xs px-2 py-0.5 rounded-full font-medium">
-                                {item.badge}
-                              </span>
-                            )}
-                          </SidebarMenuButton>
-                          <SidebarMenu className="ml-6 mt-1 space-y-1">
-                            {item.children.map((child) => {
-                              const childActive = location === child.href;
-                              return (
-                                <SidebarMenuItem key={child.name}>
-                                  <SidebarMenuButton
-                                    asChild
-                                    isActive={childActive}
-                                    className={`
-                                      h-9 px-3 rounded-lg transition-all duration-200
-                                      ${childActive ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground hover:text-foreground'}
-                                    `}
-                                  >
-                                    <Link href={child.href} className="flex items-center gap-3">
-                                      <child.icon className={`h-3.5 w-3.5 ${childActive ? 'text-primary' : ''}`} />
-                                      <span className="text-sm">{child.name}</span>
-                                      {child.badge && (
-                                        <span className="ml-auto bg-primary/20 text-primary text-[10px] px-1.5 py-0.5 rounded-full font-medium">
-                                          {child.badge}
-                                        </span>
-                                      )}
-                                    </Link>
-                                  </SidebarMenuButton>
-                                </SidebarMenuItem>
-                              );
-                            })}
-                          </SidebarMenu>
-                        </SidebarMenuItem>
-                      );
-                    }
-
+                    const isActive = location === item.href;
                     return (
                       <SidebarMenuItem key={item.name}>
-                        <SidebarMenuButton
-                          asChild
+                        <SidebarMenuButton 
+                          asChild 
+                          tooltip={item.name}
                           isActive={isActive}
-                          className={`
-                            h-10 px-3 rounded-lg transition-all duration-200
-                            ${isActive ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground hover:text-foreground'}
-                          `}
+                          className={cn(
+                            "h-10 px-4 transition-all duration-200 rounded-none border-l-2 border-transparent",
+                            isActive && "bg-primary/5 text-primary font-semibold border-l-primary"
+                          )}
                         >
                           <Link href={item.href} className="flex items-center gap-3">
-                            <item.icon className={`h-4 w-4 ${isActive ? 'text-primary' : ''}`} />
-                            <span>{item.name}</span>
+                            <item.icon className={cn("size-4 shrink-0", isActive && "text-primary")} />
+                            <span className="truncate">{item.name}</span>
                             {item.badge && (
-                              <span className="ml-auto bg-primary/20 text-primary text-xs px-2 py-0.5 rounded-full font-medium">
+                              <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary px-1">
                                 {item.badge}
                               </span>
                             )}
@@ -128,24 +109,86 @@ export function DashboardSidebar() {
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
-            {idx < filteredNavigation.length - 1 && <SidebarSeparator className="my-4" />}
+            {idx < filteredNav.length - 1 && <SidebarSeparator className="mx-4 my-2 opacity-50" />}
           </div>
         ))}
       </SidebarContent>
 
-      <SidebarFooter className="p-4 border-t border-border/50">
-        {isLoading ? (
-          <div className="flex items-center gap-3">
-            <Skeleton className="h-9 w-9 rounded-full" />
-            <div className="space-y-1">
-              <Skeleton className="h-3 w-20" />
-              <Skeleton className="h-2 w-24" />
-            </div>
+      <SidebarFooter className="border-t border-sidebar-border p-4 gap-4 bg-muted/5">
+        <div className="space-y-4 px-2">
+          <UsageLimitDisplay label="Leads" used={450} limit={1000} />
+          <UsageLimitDisplay label="AI Tokens" used={8.5} limit={10} unit="M" />
+        </div>
+        
+        <div className="rounded-xl bg-primary/5 p-4 border border-primary/10 relative overflow-hidden group">
+          <div className="absolute -right-2 -top-2 opacity-10 group-hover:scale-110 transition-transform duration-500">
+            <Sparkles className="size-12 text-primary" />
           </div>
-        ) : user ? (
-          <UserProfileDropdown user={user} />
-        ) : null}
+          <div className="flex items-center gap-2 mb-2 relative z-10">
+            <Sparkles className="size-3.5 text-primary" />
+            <span className="text-[10px] font-bold text-primary uppercase tracking-wider">Pro Tip</span>
+          </div>
+          <p className="text-[11px] text-muted-foreground leading-relaxed relative z-10">
+            Scale your outreach by connecting your custom domain in settings.
+          </p>
+        </div>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <SidebarMenuButton size="lg" className="hover-elevate mt-2">
+              <Avatar className="size-8 rounded-lg">
+                <AvatarImage src={user?.avatarUrl} alt={user?.name} />
+                <AvatarFallback className="rounded-lg bg-primary/10 text-primary">
+                  {user?.name?.charAt(0) || "U"}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col gap-0.5 leading-none overflow-hidden">
+                <span className="font-semibold truncate">{user?.name || "User"}</span>
+                <span className="text-[10px] text-muted-foreground truncate">{user?.email}</span>
+              </div>
+              <ChevronDown className="ml-auto size-4 opacity-50 shrink-0" />
+            </SidebarMenuButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56" align="end" side="right" sideOffset={10}>
+            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="gap-2 cursor-pointer">
+              <User className="size-4" />
+              <span>Profile</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem className="gap-2 cursor-pointer">
+              <Settings className="size-4" />
+              <span>Settings</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="gap-2 cursor-pointer text-destructive focus:text-destructive">
+              <LogOut className="size-4" />
+              <span>Log out</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </SidebarFooter>
     </Sidebar>
+  );
+}
+
+function Plus({ className, ...props }: any) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      {...props}
+    >
+      <path d="M5 12h14" />
+      <path d="M12 5v14" />
+    </svg>
   );
 }

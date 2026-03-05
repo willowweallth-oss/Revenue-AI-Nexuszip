@@ -5,7 +5,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
 import NotFound from "@/pages/not-found";
 
 // Pages

@@ -47,7 +47,11 @@ export default function Campaigns() {
   function onSubmit(values: z.infer<typeof formSchema>) {
     if (!user) return;
     createMutation.mutate(
-      { ...values, userId: user.id },
+      { 
+        ...values, 
+        budget: String(values.budget),
+        userId: user.id 
+      },
       {
         onSuccess: () => {
           setIsDialogOpen(false);

@@ -7,7 +7,7 @@ import {
   type FlowExecutionLog,
   type InsertFlowExecutionLog
 } from "@shared/schema";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, sql } from "drizzle-orm";
 
 export class AutomationStorage {
   async getFlows(organizationId: number): Promise<AutomationFlow[]> {
@@ -37,7 +37,7 @@ export class AutomationStorage {
       .values({
         ...flow,
         updatedAt: new Date()
-      })
+      } as any)
       .returning();
     return newFlow;
   }
@@ -52,7 +52,7 @@ export class AutomationStorage {
       .set({
         ...updates,
         updatedAt: new Date()
-      })
+      } as any)
       .where(
         and(
           eq(automationFlows.id, id),
@@ -64,7 +64,7 @@ export class AutomationStorage {
   }
 
   async deleteFlow(id: number, organizationId: number): Promise<boolean> {
-    const result = await db
+    await db
       .delete(automationFlows)
       .where(
         and(
@@ -84,7 +84,7 @@ export class AutomationStorage {
       .update(automationFlows)
       .set({
         isActive,
-        lastActivatedAt: isActive ? new Date() : undefined,
+        lastActivatedAt: isActive ? new Date() : null,
         updatedAt: new Date()
       })
       .where(
@@ -123,9 +123,9 @@ export class AutomationStorage {
     await db
       .update(automationFlows)
       .set({
-        executionCount: db.$increment(automationFlows.executionCount, 1),
-        successCount: success ? db.$increment(automationFlows.successCount, 1) : undefined,
-        failureCount: !success ? db.$increment(automationFlows.failureCount, 1) : undefined
+        executionCount: sql`${automationFlows.executionCount} + 1`,
+        successCount: success ? sql`${automationFlows.successCount} + 1` : undefined,
+        failureCount: !success ? sql`${automationFlows.failureCount} + 1` : undefined
       })
       .where(eq(automationFlows.id, id));
   }

@@ -11,6 +11,9 @@ import {
   Package,
   FileText,
   HelpCircle,
+  Inbox,
+  MessageSquare,
+  Zap,
   type LucideIcon
 } from "lucide-react";
 
@@ -31,35 +34,40 @@ export interface NavigationSection {
 
 export const navigationConfig: NavigationSection[] = [
   {
-    title: "Main",
+    title: "Operating System",
     items: [
       {
-        name: "Dashboard",
+        name: "Overview",
         href: "/",
         icon: LayoutDashboard,
         exact: true,
       },
       {
-        name: "Analytics",
-        href: "/analytics",
-        icon: BarChart3,
+        name: "Smart Inbox",
+        href: "/inbox",
+        icon: Inbox,
+        badge: "2",
       },
+      {
+        name: "Conversations",
+        href: "/conversations",
+        icon: MessageSquare,
+      },
+    ],
+  },
+  {
+    title: "Revenue Engine",
+    items: [
       {
         name: "Campaigns",
         href: "/campaigns",
         icon: Megaphone,
       },
       {
-        name: "AI Insights",
-        href: "/insights",
-        icon: Lightbulb,
-        badge: "New",
+        name: "Automation",
+        href: "/automation",
+        icon: Zap,
       },
-    ],
-  },
-  {
-    title: "Management",
-    items: [
       {
         name: "Customers",
         href: "/customers",
@@ -77,27 +85,26 @@ export const navigationConfig: NavigationSection[] = [
           },
         ],
       },
+    ],
+  },
+  {
+    title: "Intelligence",
+    items: [
       {
-        name: "Reports",
-        href: "/reports",
-        icon: FileText,
-        children: [
-          {
-            name: "Revenue Reports",
-            href: "/reports/revenue",
-            icon: BarChart3,
-          },
-          {
-            name: "Usage Reports",
-            href: "/reports/usage",
-            icon: FileText,
-          },
-        ],
+        name: "AI Insights",
+        href: "/insights",
+        icon: Lightbulb,
+        badge: "New",
+      },
+      {
+        name: "Analytics",
+        href: "/analytics",
+        icon: BarChart3,
       },
     ],
   },
   {
-    title: "Admin",
+    title: "Management",
     items: [
       {
         name: "Settings",

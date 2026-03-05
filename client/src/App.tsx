@@ -14,6 +14,7 @@ import Insights from "@/pages/Insights";
 import Analytics from "@/pages/Analytics";
 import Customers from "@/pages/Customers";
 import Unauthorized from "@/pages/Unauthorized";
+import InboxPage from "@/pages/inbox/InboxPage";
 
 function Router() {
   return (
@@ -24,6 +25,7 @@ function Router() {
         <DashboardLayout>
           <Switch>
             <Route path="/" component={Dashboard} />
+            <Route path="/inbox" component={InboxPage} />
             <Route path="/analytics" component={Analytics} />
             <Route path="/campaigns" component={Campaigns} />
             <Route path="/insights" component={Insights} />

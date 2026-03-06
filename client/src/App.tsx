@@ -22,6 +22,7 @@ import Settings from "@/pages/Settings";
 import Help from "@/pages/Help";
 import Conversations from "@/pages/Conversations";
 import Login from "@/pages/Login";
+import ForgotPassword from "@/pages/ForgotPassword";
 
 function ProtectedRoute({ component: Component, ...rest }: any) {
   const { user, isLoading } = useAuth();
@@ -36,6 +37,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/login" component={Login} />
+      <Route path="/forgot-password" component={ForgotPassword} />
       <Route path="/unauthorized" component={Unauthorized} />
 
       <Route>

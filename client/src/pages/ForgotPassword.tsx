@@ -3,8 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Command } from "lucide-react";
-import { useLocation, Link } from "wouter";
+import { Command, ArrowLeft } from "lucide-react";
+import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 
 const FloatingInput = ({ id, label, type, value, onChange, required }: any) => {
@@ -36,42 +36,23 @@ const FloatingInput = ({ id, label, type, value, onChange, required }: any) => {
   );
 };
 
-export default function Login() {
-  const [, setLocation] = useLocation();
+export default function ForgotPassword() {
   const { toast } = useToast();
-  const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
-    const endpoint = mode === "login" ? "/api/auth/login" : "/api/auth/register";
-
-    try {
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ email, password }),
+    
+    // Simulate API call
+    setTimeout(() => {
+      toast({
+        title: "Success",
+        description: "If an account exists for that email, we've sent a reset link.",
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        toast({ title: "Error", description: data.message, variant: "destructive" });
-        return;
-      }
-
-      setLocation("/");
-      window.location.href = "/";
-    } catch {
-      toast({ title: "Error", description: "Something went wrong. Please try again.", variant: "destructive" });
-    } finally {
       setIsLoading(false);
-    }
+    }, 1000);
   };
 
   return (
@@ -83,11 +64,9 @@ export default function Login() {
               <Command className="h-6 w-6" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold">Welcome to RevAuto AI</CardTitle>
+          <CardTitle className="text-2xl font-bold text-white">Reset Your Password</CardTitle>
           <CardDescription className="text-[#94a3b8]">
-            {mode === "login"
-              ? "Sign in to manage your revenue operations and AI insights."
-              : "Create an account to get started."}
+            Enter your email to receive a reset link.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -100,51 +79,17 @@ export default function Login() {
               onChange={(e: any) => setEmail(e.target.value)}
               required
             />
-            <div className="space-y-1">
-              <FloatingInput
-                id="password"
-                label="Password"
-                type="password"
-                value={password}
-                onChange={(e: any) => setPassword(e.target.value)}
-                required
-              />
-              {mode === "login" && (
-                <div className="flex justify-end">
-                  <Link href="/forgot-password">
-                    <a className="text-xs text-[#3b82f6] hover:underline">Forgot password?</a>
-                  </Link>
-                </div>
-              )}
-            </div>
             <Button type="submit" className="w-full rounded-xl bg-[#3b82f6] hover:bg-[#3b82f6]/90 text-white font-semibold h-11" disabled={isLoading}>
-              {isLoading ? "Please wait..." : mode === "login" ? "Sign In" : "Create Account"}
+              {isLoading ? "Sending..." : "Send Reset Link"}
             </Button>
           </form>
-          <div className="mt-6 text-center text-sm text-[#94a3b8]">
-            {mode === "login" ? (
-              <>
-                Don't have an account?{" "}
-                <button
-                  type="button"
-                  onClick={() => setMode("register")}
-                  className="text-[#3b82f6] font-medium hover:underline"
-                >
-                  Sign up
-                </button>
-              </>
-            ) : (
-              <>
-                Already have an account?{" "}
-                <button
-                  type="button"
-                  onClick={() => setMode("login")}
-                  className="text-[#3b82f6] font-medium hover:underline"
-                >
-                  Sign in
-                </button>
-              </>
-            )}
+          <div className="mt-6 text-center">
+            <Link href="/login">
+              <a className="text-sm text-[#3b82f6] hover:underline inline-flex items-center gap-2">
+                <ArrowLeft className="h-4 w-4" />
+                Back to Login
+              </a>
+            </Link>
           </div>
         </CardContent>
       </Card>

@@ -1,38 +1,48 @@
-import { createContext, useContext, ReactNode } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { User, Organization, Role } from "@/types/auth";
-import { apiService } from "@/services/api";
+import { createContext, useContext, ReactNode, useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Session, User } from "@supabase/supabase-js";
 
 interface AuthContextType {
   user: User | null;
-  organization: Organization | null;
+  session: Session | null;
   isLoading: boolean;
-  isAdmin: boolean;
-  isManager: boolean;
+  signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const { data: user, isLoading } = useQuery({
-    queryKey: ["/api/users/me"],
-    queryFn: () => apiService.getCurrentUser(),
-  });
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Mock organization for now based on user data
-  const organization: Organization | null = user ? {
-    id: user.organizationId,
-    name: user.company,
-    slug: "acme-corp",
-    tier: "growth",
-  } : null;
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setIsLoading(false);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setIsLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+  };
 
   const value = {
     user,
-    organization,
+    session,
     isLoading,
-    isAdmin: user?.role === "CEO" || user?.role === "admin",
-    isManager: user?.role === "manager",
+    signOut,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

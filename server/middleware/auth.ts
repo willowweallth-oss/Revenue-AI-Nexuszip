@@ -14,7 +14,7 @@ export interface AuthRequest extends Request {
 }
 
 export async function verifyAuth(req: AuthRequest, res: Response, next: NextFunction) {
-  const authHeader = req.headers.get('authorization');
+  const authHeader = req.header('authorization');
   
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ message: "Unauthorized: Missing or invalid token" });

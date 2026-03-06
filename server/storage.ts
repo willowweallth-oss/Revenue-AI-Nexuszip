@@ -1,10 +1,11 @@
 import { db } from "./db";
 import {
-  users, metrics, campaigns, insights,
+  users, metrics, campaigns, insights, customers,
   type User, type InsertUser,
   type Metric, type InsertMetric,
   type Campaign, type InsertCampaign,
-  type Insight, type InsertInsight
+  type Insight, type InsertInsight,
+  type Customer, type InsertCustomer
 } from "@shared/schema";
 import { eq, desc } from "drizzle-orm";
 
@@ -26,6 +27,10 @@ export interface IStorage {
   getInsights(): Promise<Insight[]>;
   createInsight(insight: InsertInsight): Promise<Insight>;
   updateInsightStatus(id: number, status: string): Promise<Insight | undefined>;
+
+  // Customers
+  getCustomers(): Promise<Customer[]>;
+  createCustomer(customer: InsertCustomer): Promise<Customer>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -84,6 +89,16 @@ export class DatabaseStorage implements IStorage {
       .where(eq(insights.id, id))
       .returning();
     return updated;
+  }
+
+  // Customers
+  async getCustomers(): Promise<Customer[]> {
+    return await db.select().from(customers).orderBy(desc(customers.createdAt));
+  }
+
+  async createCustomer(customer: InsertCustomer): Promise<Customer> {
+    const [newCustomer] = await db.insert(customers).values(customer).returning();
+    return newCustomer;
   }
 }
 

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { insertUserSchema, insertMetricSchema, insertCampaignSchema, insertInsightSchema, users, metrics, campaigns, insights } from './schema';
+import { insertUserSchema, insertMetricSchema, insertCampaignSchema, insertInsightSchema, insertCustomerSchema, users, metrics, campaigns, insights, customers } from './schema';
 
 export const errorSchemas = {
   validation: z.object({
@@ -78,6 +78,24 @@ export const api = {
         200: z.custom<typeof insights.$inferSelect>(),
         400: errorSchemas.validation,
         404: errorSchemas.notFound,
+      }
+    }
+  },
+  customers: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/customers' as const,
+      responses: {
+        200: z.array(z.custom<typeof customers.$inferSelect>()),
+      }
+    },
+    create: {
+      method: 'POST' as const,
+      path: '/api/customers' as const,
+      input: insertCustomerSchema,
+      responses: {
+        201: z.custom<typeof customers.$inferSelect>(),
+        400: errorSchemas.validation,
       }
     }
   }

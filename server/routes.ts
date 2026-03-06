@@ -64,6 +64,29 @@ async function seedDatabase() {
       type: "opportunity",
       status: "new"
     });
+
+    // Seed Customers
+    await storage.createCustomer({
+      name: "Alice Johnson",
+      email: "alice@techflow.com",
+      company: "TechFlow Inc",
+      status: "active",
+      value: "12500.00"
+    });
+    await storage.createCustomer({
+      name: "Bob Smith",
+      email: "bob@cloudscale.io",
+      company: "CloudScale",
+      status: "lead",
+      value: "0.00"
+    });
+    await storage.createCustomer({
+      name: "Charlie Brown",
+      email: "charlie@datawave.net",
+      company: "DataWave",
+      status: "active",
+      value: "8900.00"
+    });
   }
 }
 
@@ -76,7 +99,6 @@ export async function registerRoutes(
 
   // Users
   app.get(api.users.me.path, async (req, res) => {
-    // In a real app this would use auth. For now, just return the seeded admin user
     const user = await storage.getUser(1);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -156,16 +178,37 @@ export async function registerRoutes(
     }
   });
 
+  // Customers
+  app.get(api.customers.list.path, async (req, res) => {
+    const customers = await storage.getCustomers();
+    res.json(customers);
+  });
+
+  app.post(api.customers.create.path, async (req, res) => {
+    try {
+      const input = api.customers.create.input.parse(req.body);
+      const customer = await storage.createCustomer(input);
+      res.status(201).json(customer);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({
+          message: err.errors[0].message,
+          field: err.errors[0].path.join('.'),
+        });
+      }
+      throw err;
+    }
+  });
+
   // Automation Flows
   app.get("/api/automation/flows", async (req, res) => {
-    // In production, get organizationId from authenticated user
-    const organizationId = 1; // Mock for now
+    const organizationId = 1; 
     const flows = await automationStorage.getFlows(organizationId);
     res.json(flows);
   });
 
   app.get("/api/automation/flows/:id", async (req, res) => {
-    const organizationId = 1; // Mock for now
+    const organizationId = 1; 
     const flow = await automationStorage.getFlow(Number(req.params.id), organizationId);
     if (!flow) {
       return res.status(404).json({ message: "Flow not found" });
@@ -175,7 +218,7 @@ export async function registerRoutes(
 
   app.post("/api/automation/flows", async (req, res) => {
     try {
-      const organizationId = 1; // Mock for now
+      const organizationId = 1; 
       const flow = await automationStorage.createFlow({
         ...req.body,
         organizationId
@@ -188,7 +231,7 @@ export async function registerRoutes(
 
   app.patch("/api/automation/flows/:id", async (req, res) => {
     try {
-      const organizationId = 1; // Mock for now
+      const organizationId = 1; 
       const flow = await automationStorage.updateFlow(
         Number(req.params.id),
         organizationId,
@@ -204,14 +247,14 @@ export async function registerRoutes(
   });
 
   app.delete("/api/automation/flows/:id", async (req, res) => {
-    const organizationId = 1; // Mock for now
+    const organizationId = 1; 
     await automationStorage.deleteFlow(Number(req.params.id), organizationId);
     res.status(204).send();
   });
 
   app.post("/api/automation/flows/:id/toggle", async (req, res) => {
     try {
-      const organizationId = 1; // Mock for now
+      const organizationId = 1; 
       const { isActive } = req.body;
       const flow = await automationStorage.toggleFlowActive(
         Number(req.params.id),
@@ -228,7 +271,7 @@ export async function registerRoutes(
   });
 
   app.get("/api/automation/flows/:id/logs", async (req, res) => {
-    const organizationId = 1; // Mock for now
+    const organizationId = 1; 
     const logs = await automationStorage.getExecutionLogs(
       Number(req.params.id),
       organizationId

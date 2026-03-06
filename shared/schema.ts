@@ -44,6 +44,17 @@ export const insights = pgTable("insights", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const customers = pgTable("customers", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  company: text("company").notNull(),
+  status: text("status").notNull(), // active, lead, churned
+  value: numeric("value").notNull(), // lifetime value
+  lastActive: timestamp("last_active").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   metrics: many(metrics),
@@ -77,6 +88,7 @@ export const insertUserSchema = createInsertSchema(users).omit({ id: true, creat
 export const insertMetricSchema = createInsertSchema(metrics).omit({ id: true });
 export const insertCampaignSchema = createInsertSchema(campaigns).omit({ id: true, createdAt: true });
 export const insertInsightSchema = createInsertSchema(insights).omit({ id: true, createdAt: true });
+export const insertCustomerSchema = createInsertSchema(customers).omit({ id: true, createdAt: true, lastActive: true });
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -90,6 +102,9 @@ export type InsertCampaign = z.infer<typeof insertCampaignSchema>;
 
 export type Insight = typeof insights.$inferSelect;
 export type InsertInsight = z.infer<typeof insertInsightSchema>;
+
+export type Customer = typeof customers.$inferSelect;
+export type InsertCustomer = z.infer<typeof insertCustomerSchema>;
 
 // Re-export automation schemas
 export * from "./automation-schema";

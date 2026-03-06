@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request } from "express";
 import type { Server } from "http";
 import { storage } from "./storage";
 import { automationStorage } from "./automation-storage";
@@ -8,6 +8,10 @@ import { z } from "zod";
 import { verifyAuth, AuthRequest } from "./middleware/auth";
 import { WebSocketServer, WebSocket } from "ws";
 import { log } from "./index";
+import { db } from "./db";
+import { appUsers } from "@shared/schema";
+import { eq } from "drizzle-orm";
+import bcrypt from "bcryptjs";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -37,7 +41,72 @@ export async function registerRoutes(
     });
   };
 
-  // Apply auth middleware to all /api routes
+  // Auth routes (public - no middleware)
+  app.post("/api/auth/register", async (req: Request, res) => {
+    try {
+      const { email, password } = z.object({
+        email: z.string().email(),
+        password: z.string().min(6),
+      }).parse(req.body);
+
+      const [existing] = await db.select().from(appUsers).where(eq(appUsers.email, email));
+      if (existing) {
+        return res.status(400).json({ message: "Email already registered" });
+      }
+
+      const passwordHash = await bcrypt.hash(password, 12);
+      const [user] = await db.insert(appUsers).values({ email, passwordHash }).returning();
+
+      (req.session as any).userId = String(user.id);
+      (req.session as any).userEmail = user.email;
+
+      res.status(201).json({ id: String(user.id), email: user.email });
+    } catch (err: any) {
+      res.status(400).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/auth/login", async (req: Request, res) => {
+    try {
+      const { email, password } = z.object({
+        email: z.string().email(),
+        password: z.string(),
+      }).parse(req.body);
+
+      const [user] = await db.select().from(appUsers).where(eq(appUsers.email, email));
+      if (!user) {
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
+
+      const valid = await bcrypt.compare(password, user.passwordHash);
+      if (!valid) {
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
+
+      (req.session as any).userId = String(user.id);
+      (req.session as any).userEmail = user.email;
+
+      res.json({ id: String(user.id), email: user.email });
+    } catch (err: any) {
+      res.status(400).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/auth/logout", (req: Request, res) => {
+    req.session.destroy(() => {
+      res.json({ message: "Logged out" });
+    });
+  });
+
+  app.get("/api/auth/session", (req: Request, res) => {
+    if ((req.session as any).userId) {
+      res.json({ id: (req.session as any).userId, email: (req.session as any).userEmail });
+    } else {
+      res.status(401).json({ message: "Not authenticated" });
+    }
+  });
+
+  // Apply auth middleware to all /api routes (except auth routes above)
   app.use("/api", verifyAuth as any);
 
   // Users

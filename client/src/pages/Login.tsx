@@ -3,39 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Command } from "lucide-react";
 import { useLocation, Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
-
-const FloatingInput = ({ id, label, type, value, onChange, required }: any) => {
-  const [isFocused, setIsFocused] = useState(false);
-  const hasValue = value && value.length > 0;
-
-  return (
-    <div className="relative mt-2">
-      <Input
-        id={id}
-        type={type}
-        value={value}
-        onChange={onChange}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
-        required={required}
-        className="h-12 bg-black border-[#3b82f6] text-white rounded-xl pt-4 pb-1 peer focus-visible:ring-0 focus-visible:ring-offset-0 transition-all"
-      />
-      <Label
-        htmlFor={id}
-        className={`absolute left-3 transition-all duration-200 pointer-events-none
-          ${(isFocused || hasValue) 
-            ? "-top-2 left-2 bg-black px-1 text-[10px] text-[#3b82f6]" 
-            : "top-3.5 text-sm text-[#94a3b8]"}`}
-      >
-        {label}
-      </Label>
-    </div>
-  );
-};
-
 import logoImg from "@assets/svg_1772778640623.PNG";
 
 const FloatingInput = ({ id, label, type, value, onChange, required }: any) => {
@@ -57,8 +26,8 @@ const FloatingInput = ({ id, label, type, value, onChange, required }: any) => {
       <Label
         htmlFor={id}
         className={`absolute left-3 transition-all duration-200 pointer-events-none
-          ${(isFocused || hasValue) 
-            ? "-top-2 left-2 bg-black px-1 text-[10px] text-[#3b82f6]" 
+          ${(isFocused || hasValue)
+            ? "-top-2 left-2 bg-black px-1 text-[10px] text-[#3b82f6]"
             : "top-3.5 text-sm text-[#94a3b8]"}`}
       >
         {label}

@@ -9,6 +9,7 @@ import { AuthProvider, useAuth } from "@/store/auth-context";
 import NotFound from "@/pages/not-found";
 
 // Pages
+import Onboarding from "@/pages/Onboarding";
 import Dashboard from "@/pages/Dashboard";
 import Campaigns from "@/pages/Campaigns";
 import Insights from "@/pages/Insights";
@@ -36,11 +37,12 @@ function ProtectedRoute({ component: Component, ...rest }: any) {
 function Router() {
   return (
     <Switch>
+      <Route path="/" component={Onboarding} />
       <Route path="/login" component={Login} />
       <Route path="/forgot-password" component={ForgotPassword} />
       <Route path="/unauthorized" component={Unauthorized} />
 
-      <Route>
+      <Route path="/dashboard">
         <DashboardLayout>
           <Switch>
             <Route path="/">

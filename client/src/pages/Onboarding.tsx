@@ -54,12 +54,10 @@ export default function Onboarding() {
   return (
     <div className="min-h-screen w-full bg-[#030712] flex flex-col items-center justify-center relative overflow-hidden font-sans selection:bg-blue-500/30">
       <BackgroundParticles />
-      
       {/* Decorative Light Trails */}
       <div className="absolute top-0 left-1/4 w-px h-64 bg-gradient-to-b from-transparent via-blue-500/20 to-transparent" />
       <div className="absolute bottom-0 right-1/4 w-px h-64 bg-gradient-to-t from-transparent via-blue-500/20 to-transparent" />
-
-      <main className="relative z-10 w-full max-w-6xl px-6 py-12 flex flex-col items-center">
+      <main className="relative z-10 w-full max-w-6xl px-6 py-12 flex flex-col items-center font-normal bg-[transparent] text-center text-[16px] text-[#fafafa]">
         {/* Logo Section */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
@@ -165,7 +163,6 @@ export default function Onboarding() {
           />
         </div>
       </main>
-
       {/* Subtle Footer */}
       <motion.footer 
         initial={{ opacity: 0 }}

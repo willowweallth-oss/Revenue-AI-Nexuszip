@@ -1,0 +1,35 @@
+@replit-ai Build an extraordinary, never-before-seen onboarding page for my project "Flowtari" that immediately impresses users and companies. Follow these specifications:
+
+1. **Logo Enhancement:**
+   - Use the new glowing blue-gradient 'F' crest logo as the centerpiece.
+   - Enhance it with depth, subtle 3D shading, and soft light reflections.
+   - Remove any existing background and replace it with a **premium abstract AI-themed background** (e.g., dark futuristic gradient with soft neon data lines, glowing nodes, or dynamic particles that subtly move).
+
+2. **Layout & Visual Design:**
+   - Hero-style, full-screen layout.
+   - Centered glowing logo at the top with a slight pulse animation.
+   - Headline: "Maximize Your Revenue with Flowtari" — bold, large, futuristic font.
+   - Subheadline: "The all-in-one platform for automated revenue operations and real-time AI insights." — smaller, sleek, readable font.
+   - Use real images and modern design elements to give a trustworthy and cutting-edge corporate feel.
+
+3. **Actionable Buttons:**
+   - Prominent primary button: "Get Started" (#3b82f6 background, white text) → Signup page.
+   - Secondary button: "Sign In" (transparent, #3b82f6 border) → Login page.
+   - Buttons should have hover and subtle glow effects.
+
+4. **Professional UI Touches:**
+   - Include subtle animated elements like soft particle movement or light trails to make the page feel alive but not overwhelming.
+   - Ensure visual hierarchy is clear and professional.
+   - Maintain a clean, corporate-friendly color palette with dark background and glowing accents.
+
+5. **Navigation & User Experience:**
+   - Make this page the first page users see (root index).
+   - Smooth transitions to Login/Signup pages.
+   - Ensure responsiveness across devices (desktop, tablet, mobile).
+
+6. **Additional Features for Wow Factor:**
+   - Incorporate real-life imagery or abstract illustrations that convey innovation, AI, and automation.
+   - Subtle micro-interactions on hover for buttons or logo for engagement.
+   - Eye-catching but clean aesthetic that feels premium and “must-have” for users and companies.
+
+> Goal: Build a visually stunning, highly professional, and engaging onboarding page for Flowtari that makes users excited to sign up immediately.

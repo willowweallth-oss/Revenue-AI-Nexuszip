@@ -2,15 +2,41 @@ import type { Express } from "express";
 import type { Server } from "http";
 import { storage } from "./storage";
 import { automationStorage } from "./automation-storage";
+import { automationEngine } from "./automation-engine";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import { verifyAuth, AuthRequest } from "./middleware/auth";
+import { WebSocketServer, WebSocket } from "ws";
+import { log } from "./index";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
   
+  // Setup WebSocket Server
+  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  const clients = new Set<WebSocket>();
+
+  wss.on('connection', (ws) => {
+    clients.add(ws);
+    log("[ws] Client connected", "websocket");
+    
+    ws.on('close', () => {
+      clients.delete(ws);
+      log("[ws] Client disconnected", "websocket");
+    });
+  });
+
+  const broadcast = (data: any) => {
+    const message = JSON.stringify(data);
+    clients.forEach(client => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(message);
+      }
+    });
+  };
+
   // Apply auth middleware to all /api routes
   app.use("/api", verifyAuth as any);
 
@@ -25,34 +51,43 @@ export async function registerRoutes(
     });
   });
 
-  // Metrics
-  app.get(api.metrics.list.path, async (req: AuthRequest, res) => {
-    const metrics = await storage.getMetrics();
-    res.json(metrics);
+  // Automation Flows
+  app.get("/api/automation/flows", async (req: AuthRequest, res) => {
+    const organizationId = 1; 
+    const flows = await automationStorage.getFlows(organizationId);
+    res.json(flows);
   });
 
-  // Campaigns
-  app.get(api.campaigns.list.path, async (req: AuthRequest, res) => {
-    const campaigns = await storage.getCampaigns();
-    res.json(campaigns);
+  app.get("/api/automation/flows/:id", async (req: AuthRequest, res) => {
+    const organizationId = 1; 
+    const flow = await automationStorage.getFlow(Number(req.params.id), organizationId);
+    if (!flow) {
+      return res.status(404).json({ message: "Flow not found" });
+    }
+    res.json(flow);
   });
 
-  app.post(api.campaigns.create.path, async (req: AuthRequest, res) => {
+  app.post("/api/automation/execute-flow", async (req: AuthRequest, res) => {
     try {
-      const input = api.campaigns.create.input.parse(req.body);
-      const campaign = await storage.createCampaign({
-        ...input,
-        userId: 1 
+      const { flowId, payload } = z.object({
+        flowId: z.union([z.string(), z.number()]),
+        payload: z.any()
+      }).parse(req.body);
+
+      const organizationId = 1; // Placeholder
+      const id = typeof flowId === 'string' ? parseInt(flowId) : flowId;
+
+      const result = await automationEngine.executeFlow({
+        flowId: id,
+        organizationId,
+        payload,
+        broadcast
       });
-      res.status(201).json(campaign);
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        return res.status(400).json({
-          message: err.errors[0].message,
-          field: err.errors[0].path.join('.'),
-        });
-      }
-      throw err;
+
+      res.json(result);
+    } catch (err: any) {
+      log(`[api] Flow execution error: ${err.message}`, "error");
+      res.status(400).json({ message: err.message });
     }
   });
 
@@ -61,7 +96,6 @@ export async function registerRoutes(
     const userId = 1; // Placeholder
     let notifications = await storage.getNotifications(userId);
     
-    // Seed sample data if empty
     if (notifications.length === 0) {
       await storage.createNotification({
         userId,
@@ -69,14 +103,6 @@ export async function registerRoutes(
         title: "Welcome to RevAuto AI",
         description: "Your revenue operating system is ready. Start by exploring your dashboard.",
         type: "info",
-        read: false
-      });
-      await storage.createNotification({
-        userId,
-        organizationId: 1,
-        title: "New Insight Available",
-        description: "We've identified a potential expansion opportunity in your Enterprise segment.",
-        type: "success",
         read: false
       });
       notifications = await storage.getNotifications(userId);
@@ -107,22 +133,6 @@ export async function registerRoutes(
       return res.status(404).json({ message: "Notification not found" });
     }
     res.status(204).end();
-  });
-
-  // Automation Flows
-  app.get("/api/automation/flows", async (req: AuthRequest, res) => {
-    const organizationId = 1; 
-    const flows = await automationStorage.getFlows(organizationId);
-    res.json(flows);
-  });
-
-  app.get("/api/automation/flows/:id", async (req: AuthRequest, res) => {
-    const organizationId = 1; 
-    const flow = await automationStorage.getFlow(Number(req.params.id), organizationId);
-    if (!flow) {
-      return res.status(404).json({ message: "Flow not found" });
-    }
-    res.json(flow);
   });
   
   return httpServer;

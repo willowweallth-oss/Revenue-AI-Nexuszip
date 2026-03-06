@@ -1,4 +1,5 @@
 import { createContext, useContext, ReactNode, useEffect, useState } from "react";
+import { AuthLoader } from "@/components/auth/AuthLoader";
 
 interface AppUser {
   id: string;
@@ -37,6 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider value={{ user, isLoading, signOut }}>
+      {isLoading && <AuthLoader />}
       {children}
     </AuthContext.Provider>
   );

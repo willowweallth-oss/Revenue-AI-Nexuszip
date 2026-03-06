@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -6,64 +5,25 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { Bell, Check, X } from "lucide-react";
+import { Bell, Check, X, Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
-interface Notification {
-  id: string;
-  title: string;
-  description: string;
-  time: string;
-  read: boolean;
-  type: 'info' | 'success' | 'warning' | 'error';
-}
-
-const mockNotifications: Notification[] = [
-  {
-    id: '1',
-    title: 'New campaign created',
-    description: 'Q4 Expansion campaign has been successfully launched',
-    time: '5m ago',
-    read: false,
-    type: 'success'
-  },
-  {
-    id: '2',
-    title: 'High churn detected',
-    description: 'Enterprise segment showing increased churn rate',
-    time: '1h ago',
-    read: false,
-    type: 'warning'
-  },
-  {
-    id: '3',
-    title: 'Monthly report ready',
-    description: 'Your revenue analytics report is available',
-    time: '2h ago',
-    read: true,
-    type: 'info'
-  },
-];
+import { 
+  useNotifications, 
+  useMarkNotificationRead, 
+  useMarkAllNotificationsRead, 
+  useDeleteNotification 
+} from "@/hooks/use-notifications";
+import { formatDistanceToNow } from "date-fns";
 
 export function NotificationDropdown() {
-  const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
+  const { data: notifications = [], isLoading, error } = useNotifications();
+  const markReadMutation = useMarkNotificationRead();
+  const markAllReadMutation = useMarkAllNotificationsRead();
+  const deleteMutation = useDeleteNotification();
+
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  const markAsRead = (id: string) => {
-    setNotifications(prev =>
-      prev.map(n => n.id === id ? { ...n, read: true } : n)
-    );
-  };
-
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-  };
-
-  const removeNotification = (id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
-  };
-
-  const getTypeColor = (type: Notification['type']) => {
+  const getTypeColor = (type: string) => {
     switch (type) {
       case 'success': return 'text-emerald-500';
       case 'warning': return 'text-amber-500';
@@ -71,6 +31,10 @@ export function NotificationDropdown() {
       default: return 'text-primary';
     }
   };
+
+  if (error) {
+    console.error("[NotificationDropdown] Error fetching notifications:", error);
+  }
 
   return (
     <DropdownMenu>
@@ -98,15 +62,20 @@ export function NotificationDropdown() {
               variant="ghost"
               size="sm"
               className="h-7 text-xs"
-              onClick={markAllAsRead}
+              onClick={() => markAllReadMutation.mutate()}
+              disabled={markAllReadMutation.isPending}
             >
-              Mark all read
+              {markAllReadMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : "Mark all read"}
             </Button>
           )}
         </div>
 
         <ScrollArea className="h-[400px]">
-          {notifications.length === 0 ? (
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 text-muted-foreground animate-spin" />
+            </div>
+          ) : notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Bell className="h-8 w-8 text-muted-foreground mb-2" />
               <p className="text-sm text-muted-foreground">No notifications</p>
@@ -131,7 +100,8 @@ export function NotificationDropdown() {
                               variant="ghost"
                               size="icon"
                               className="h-6 w-6 rounded-full"
-                              onClick={() => markAsRead(notification.id)}
+                              onClick={() => markReadMutation.mutate(notification.id)}
+                              disabled={markReadMutation.isPending}
                             >
                               <Check className="h-3 w-3" />
                             </Button>
@@ -140,14 +110,17 @@ export function NotificationDropdown() {
                             variant="ghost"
                             size="icon"
                             className="h-6 w-6 rounded-full hover:bg-destructive/10 hover:text-destructive"
-                            onClick={() => removeNotification(notification.id)}
+                            onClick={() => deleteMutation.mutate(notification.id)}
+                            disabled={deleteMutation.isPending}
                           >
                             <X className="h-3 w-3" />
                           </Button>
                         </div>
                       </div>
                       <p className="text-xs text-muted-foreground line-clamp-2">{notification.description}</p>
-                      <p className="text-xs text-muted-foreground">{notification.time}</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+                      </p>
                     </div>
                   </div>
                 </div>

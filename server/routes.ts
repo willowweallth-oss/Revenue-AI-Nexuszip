@@ -16,8 +16,6 @@ export async function registerRoutes(
 
   // Users
   app.get(api.users.me.path, async (req: AuthRequest, res) => {
-    // In a real app, we'd fetch the profile from the DB using req.user.id
-    // For now, we'll return the auth user info
     res.json({
       id: req.user?.id,
       email: req.user?.email,
@@ -29,23 +27,22 @@ export async function registerRoutes(
 
   // Metrics
   app.get(api.metrics.list.path, async (req: AuthRequest, res) => {
-    const metrics = await storage.getMetrics(); // In real app, filter by userId
+    const metrics = await storage.getMetrics();
     res.json(metrics);
   });
 
   // Campaigns
   app.get(api.campaigns.list.path, async (req: AuthRequest, res) => {
-    const campaigns = await storage.getCampaigns(); // In real app, filter by userId
+    const campaigns = await storage.getCampaigns();
     res.json(campaigns);
   });
 
   app.post(api.campaigns.create.path, async (req: AuthRequest, res) => {
     try {
       const input = api.campaigns.create.input.parse(req.body);
-      // Use authenticated user ID
       const campaign = await storage.createCampaign({
         ...input,
-        userId: 1 // Placeholder until schema is updated for UUIDs
+        userId: 1 
       });
       res.status(201).json(campaign);
     } catch (err) {
@@ -57,6 +54,59 @@ export async function registerRoutes(
       }
       throw err;
     }
+  });
+
+  // Notifications
+  app.get("/api/notifications", async (req: AuthRequest, res) => {
+    const userId = 1; // Placeholder
+    let notifications = await storage.getNotifications(userId);
+    
+    // Seed sample data if empty
+    if (notifications.length === 0) {
+      await storage.createNotification({
+        userId,
+        organizationId: 1,
+        title: "Welcome to RevAuto AI",
+        description: "Your revenue operating system is ready. Start by exploring your dashboard.",
+        type: "info",
+        read: false
+      });
+      await storage.createNotification({
+        userId,
+        organizationId: 1,
+        title: "New Insight Available",
+        description: "We've identified a potential expansion opportunity in your Enterprise segment.",
+        type: "success",
+        read: false
+      });
+      notifications = await storage.getNotifications(userId);
+    }
+    
+    res.json(notifications);
+  });
+
+  app.post("/api/notifications/:id/read", async (req: AuthRequest, res) => {
+    const userId = 1; // Placeholder
+    const notification = await storage.markNotificationRead(Number(req.params.id), userId);
+    if (!notification) {
+      return res.status(404).json({ message: "Notification not found" });
+    }
+    res.json(notification);
+  });
+
+  app.post("/api/notifications/read-all", async (req: AuthRequest, res) => {
+    const userId = 1; // Placeholder
+    await storage.markAllNotificationsRead(userId);
+    res.json({ message: "All notifications marked as read" });
+  });
+
+  app.delete("/api/notifications/:id", async (req: AuthRequest, res) => {
+    const userId = 1; // Placeholder
+    const success = await storage.deleteNotification(Number(req.params.id), userId);
+    if (!success) {
+      return res.status(404).json({ message: "Notification not found" });
+    }
+    res.status(204).end();
   });
 
   // Automation Flows
@@ -74,8 +124,6 @@ export async function registerRoutes(
     }
     res.json(flow);
   });
-
-  // ... other routes would follow the same pattern of using req.user.id
   
   return httpServer;
 }

@@ -2,15 +2,16 @@ import { useCallback, useState } from "react";
 import { FlowNode, FlowEdge } from "@/types/automation";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { ArrowRight, GripVertical, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowRight, GripVertical, Trash2, AlertCircle, CheckCircle2 } from "lucide-react";
 import { getNodeDefinition } from "@/config/flow-nodes";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface FlowCanvasProps {
   nodes: FlowNode[];
   edges: FlowEdge[];
   selectedNodeId: string | null;
+  nodeStatuses?: Record<string, { status: 'success' | 'fail' | 'running', message?: string }>;
   onNodeSelect: (nodeId: string | null) => void;
   onNodeMove: (nodeId: string, position: { x: number; y: number }) => void;
   onNodeDelete: (nodeId: string) => void;
@@ -23,6 +24,7 @@ export function FlowCanvas({
   nodes,
   edges,
   selectedNodeId,
+  nodeStatuses = {},
   onNodeSelect,
   onNodeMove,
   onNodeDelete,
@@ -72,8 +74,14 @@ export function FlowCanvas({
     setConnectingFrom(null);
   };
 
-  const getNodeColor = (type: FlowNode['type']) => {
-    switch (type) {
+  const getNodeColor = (node: FlowNode) => {
+    const status = nodeStatuses[node.id]?.status;
+    
+    if (status === 'success') return 'border-emerald-500 bg-emerald-500/10 shadow-[0_0_15px_rgba(16,185,129,0.2)]';
+    if (status === 'fail') return 'border-destructive bg-destructive/10 shadow-[0_0_15px_rgba(239,68,68,0.2)]';
+    if (status === 'running') return 'border-primary bg-primary/10 animate-pulse';
+
+    switch (node.type) {
       case 'trigger': return 'border-primary bg-primary/5';
       case 'condition': return 'border-amber-500 bg-amber-500/5';
       case 'action': return 'border-emerald-500 bg-emerald-500/5';
@@ -193,98 +201,113 @@ export function FlowCanvas({
         </div>
       )}
 
-      {nodes.map((node) => {
-        const isSelected = selectedNodeId === node.id;
-        const isConnecting = connectingFrom === node.id;
+      <TooltipProvider>
+        {nodes.map((node) => {
+          const isSelected = selectedNodeId === node.id;
+          const isConnecting = connectingFrom === node.id;
+          const status = nodeStatuses[node.id];
 
-        return (
-          <Card
-            key={node.id}
-            className={cn(
-              "absolute w-[280px] cursor-move transition-all duration-200",
-              getNodeColor(node.type),
-              isSelected && "ring-2 ring-primary ring-offset-2 ring-offset-background",
-              isConnecting && "ring-2 ring-primary ring-offset-2 ring-offset-background animate-pulse",
-              "hover:shadow-lg"
-            )}
-            style={{
-              left: `${node.position.x}px`,
-              top: `${node.position.y}px`,
-            }}
-            onMouseDown={(e) => {
-              e.stopPropagation();
-              onNodeSelect(node.id);
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-3">
-              <div className="flex items-start justify-between gap-2 mb-2">
-                <div className="flex items-center gap-2 flex-1 min-w-0">
-                  {getNodeIcon(node.nodeType)}
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-semibold truncate">{node.label}</h4>
-                    <Badge variant="secondary" className="text-[9px] mt-1 uppercase tracking-wider">
-                      {node.type}
-                    </Badge>
-                  </div>
-                </div>
-
-                {!readOnly && (
-                  <div className="flex items-center gap-1 shrink-0">
-                    <button
-                      className="size-6 rounded hover:bg-background/80 flex items-center justify-center cursor-grab active:cursor-grabbing"
-                      onMouseDown={(e) => handleNodeDragStart(node.id, e)}
-                    >
-                      <GripVertical className="size-3 text-muted-foreground" />
-                    </button>
-                    <button
-                      className="size-6 rounded hover:bg-destructive/10 flex items-center justify-center text-muted-foreground hover:text-destructive"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onNodeDelete(node.id);
-                      }}
-                    >
-                      <Trash2 className="size-3" />
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {Object.keys(node.config).length > 0 && (
-                <div className="mt-2 pt-2 border-t border-border/50">
-                  <div className="text-[10px] text-muted-foreground space-y-1">
-                    {Object.entries(node.config).slice(0, 2).map(([key, value]) => (
-                      <div key={key} className="flex justify-between gap-2">
-                        <span className="font-medium capitalize">{key.replace(/_/g, ' ')}:</span>
-                        <span className="truncate">{String(value)}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {!readOnly && (
-                <div className="flex gap-2 mt-3">
-                  <button
-                    className="flex-1 h-6 rounded bg-background/50 hover:bg-background text-[10px] font-medium flex items-center justify-center gap-1 border border-border/50"
-                    onClick={(e) => handleConnectStart(node.id, e)}
-                  >
-                    Connect →
-                  </button>
-                  {connectingFrom && connectingFrom !== node.id && (
-                    <button
-                      className="flex-1 h-6 rounded bg-primary/10 hover:bg-primary/20 text-[10px] font-medium flex items-center justify-center gap-1 border border-primary/30 text-primary"
-                      onClick={(e) => handleConnectEnd(node.id, e)}
-                    >
-                      ← Connect Here
-                    </button>
+          return (
+            <Tooltip key={node.id}>
+              <TooltipTrigger asChild>
+                <Card
+                  className={cn(
+                    "absolute w-[280px] cursor-move transition-all duration-200",
+                    getNodeColor(node),
+                    isSelected && "ring-2 ring-primary ring-offset-2 ring-offset-background",
+                    isConnecting && "ring-2 ring-primary ring-offset-2 ring-offset-background animate-pulse",
+                    "hover:shadow-lg"
                   )}
-                </div>
+                  style={{
+                    left: `${node.position.x}px`,
+                    top: `${node.position.y}px`,
+                  }}
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                    onNodeSelect(node.id);
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="p-3">
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        {getNodeIcon(node.nodeType)}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-semibold truncate">{node.label}</h4>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant="secondary" className="text-[9px] uppercase tracking-wider">
+                              {node.type}
+                            </Badge>
+                            {status?.status === 'success' && <CheckCircle2 className="size-3 text-emerald-500" />}
+                            {status?.status === 'fail' && <AlertCircle className="size-3 text-destructive" />}
+                          </div>
+                        </div>
+                      </div>
+
+                      {!readOnly && (
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            className="size-6 rounded hover:bg-background/80 flex items-center justify-center cursor-grab active:cursor-grabbing"
+                            onMouseDown={(e) => handleNodeDragStart(node.id, e)}
+                          >
+                            <GripVertical className="size-3 text-muted-foreground" />
+                          </button>
+                          <button
+                            className="size-6 rounded hover:bg-destructive/10 flex items-center justify-center text-muted-foreground hover:text-destructive"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onNodeDelete(node.id);
+                            }}
+                          >
+                            <Trash2 className="size-3" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {Object.keys(node.config).length > 0 && (
+                      <div className="mt-2 pt-2 border-t border-border/50">
+                        <div className="text-[10px] text-muted-foreground space-y-1">
+                          {Object.entries(node.config).slice(0, 2).map(([key, value]) => (
+                            <div key={key} className="flex justify-between gap-2">
+                              <span className="font-medium capitalize">{key.replace(/_/g, ' ')}:</span>
+                              <span className="truncate">{String(value)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {!readOnly && (
+                      <div className="flex gap-2 mt-3">
+                        <button
+                          className="flex-1 h-6 rounded bg-background/50 hover:bg-background text-[10px] font-medium flex items-center justify-center gap-1 border border-border/50"
+                          onClick={(e) => handleConnectStart(node.id, e)}
+                        >
+                          Connect →
+                        </button>
+                        {connectingFrom && connectingFrom !== node.id && (
+                          <button
+                            className="flex-1 h-6 rounded bg-primary/10 hover:bg-primary/20 text-[10px] font-medium flex items-center justify-center gap-1 border border-primary/30 text-primary"
+                            onClick={(e) => handleConnectEnd(node.id, e)}
+                          >
+                            ← Connect Here
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              </TooltipTrigger>
+              {status?.message && (
+                <TooltipContent>
+                  <p className="text-xs">{status.message}</p>
+                </TooltipContent>
               )}
-            </div>
-          </Card>
-        );
-      })}
+            </Tooltip>
+          );
+        })}
+      </TooltipProvider>
     </div>
   );
 }

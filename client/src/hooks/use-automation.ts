@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AutomationFlow } from "@/types/automation";
+import { apiRequest } from "@/lib/queryClient";
 
 const API_BASE = "/api/automation";
 
@@ -106,6 +107,15 @@ export function useToggleFlowActive() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: [API_BASE, "flows"] });
       queryClient.invalidateQueries({ queryKey: [API_BASE, "flows", variables.id] });
+    },
+  });
+}
+
+export function useExecuteFlow() {
+  return useMutation({
+    mutationFn: async ({ flowId, payload }: { flowId: number; payload: any }) => {
+      const res = await apiRequest("POST", `${API_BASE}/execute-flow`, { flowId, payload });
+      return res.json();
     },
   });
 }

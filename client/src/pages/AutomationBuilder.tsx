@@ -1,7 +1,7 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useParams, useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { useAutomationFlow, useUpdateFlow, useToggleFlowActive } from "@/hooks/use-automation";
+import { useAutomationFlow, useUpdateFlow, useToggleFlowActive, useExecuteFlow } from "@/hooks/use-automation";
 import { FlowCanvas } from "@/components/automation/FlowCanvas";
 import { NodePalette } from "@/components/automation/NodePalette";
 import { NodeConfigPanel } from "@/components/automation/NodeConfigPanel";
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save, Play, Pause, Eye, CircleAlert as AlertCircle } from "lucide-react";
+import { ArrowLeft, Save, Play, Pause, Eye, CircleAlert as AlertCircle, Zap, Loader2 } from "lucide-react";
 import { FlowNode, FlowEdge, NodeDefinition } from "@/types/automation";
 import { nanoid } from "nanoid";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
@@ -21,12 +21,17 @@ export default function AutomationBuilder() {
   const { data: flow, isLoading } = useAutomationFlow(flowId);
   const updateMutation = useUpdateFlow();
   const toggleMutation = useToggleFlowActive();
+  const executeMutation = useExecuteFlow();
   const { toast } = useToast();
 
   const [nodes, setNodes] = useState<FlowNode[]>([]);
   const [edges, setEdges] = useState<FlowEdge[]>([]);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [nodeStatuses, setNodeStatuses] = useState<Record<string, { status: 'success' | 'fail' | 'running', message?: string }>>({});
+  const [isExecuting, setIsExecuting] = useState(false);
+
+  const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
     if (flow) {
@@ -40,6 +45,38 @@ export default function AutomationBuilder() {
       setHasUnsavedChanges(true);
     }
   }, [nodes, edges, flow]);
+
+  // WebSocket setup for real-time execution updates
+  useEffect(() => {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    
+    const connect = () => {
+      const ws = new WebSocket(wsUrl);
+      wsRef.current = ws;
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === 'FLOW_NODE_UPDATE' && data.flowId === flowId) {
+            setNodeStatuses(prev => ({
+              ...prev,
+              [data.nodeId]: { status: data.status, message: data.message }
+            }));
+          }
+        } catch (err) {
+          console.error("Failed to parse WS message", err);
+        }
+      };
+
+      ws.onclose = () => {
+        setTimeout(connect, 3000);
+      };
+    };
+
+    connect();
+    return () => wsRef.current?.close();
+  }, [flowId]);
 
   const handleNodeAdd = useCallback((definition: NodeDefinition) => {
     const newNode: FlowNode = {
@@ -166,6 +203,55 @@ export default function AutomationBuilder() {
     );
   };
 
+  const handleRunFlow = () => {
+    if (!flowId) return;
+    
+    setNodeStatuses({});
+    setIsExecuting(true);
+    toast({ title: "Starting flow execution..." });
+
+    // Optimistically set triggers to running
+    const triggers = nodes.filter(n => n.type === 'trigger');
+    const initialStatuses: Record<string, any> = {};
+    triggers.forEach(t => {
+      initialStatuses[t.id] = { status: 'running' };
+    });
+    setNodeStatuses(initialStatuses);
+
+    executeMutation.mutate(
+      { 
+        flowId, 
+        payload: { 
+          source: "manual_test",
+          leadScore: 90, // Mock data for testing conditions
+          timestamp: new Date().toISOString()
+        } 
+      },
+      {
+        onSuccess: (data) => {
+          setIsExecuting(false);
+          if (data.status === 'completed') {
+            toast({ title: "Flow execution completed" });
+          } else {
+            toast({ 
+              title: "Flow execution failed", 
+              description: data.errorMessage,
+              variant: "destructive" 
+            });
+          }
+        },
+        onError: (err) => {
+          setIsExecuting(false);
+          toast({ 
+            title: "Execution error", 
+            description: err.message,
+            variant: "destructive" 
+          });
+        }
+      }
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -233,6 +319,15 @@ export default function AutomationBuilder() {
         <div className="flex items-center gap-2 shrink-0">
           <Button
             variant="outline"
+            onClick={handleRunFlow}
+            disabled={isExecuting || hasUnsavedChanges}
+            className="rounded-xl gap-2 border-primary/50 text-primary hover:bg-primary/5"
+          >
+            {isExecuting ? <Loader2 className="size-4 animate-spin" /> : <Zap className="size-4" />}
+            Run Flow
+          </Button>
+          <Button
+            variant="outline"
             onClick={handleSave}
             disabled={!hasUnsavedChanges || updateMutation.isPending}
             className="rounded-xl gap-2"
@@ -264,6 +359,7 @@ export default function AutomationBuilder() {
               nodes={nodes}
               edges={edges}
               selectedNodeId={selectedNodeId}
+              nodeStatuses={nodeStatuses}
               onNodeSelect={setSelectedNodeId}
               onNodeMove={handleNodeMove}
               onNodeDelete={handleNodeDelete}
